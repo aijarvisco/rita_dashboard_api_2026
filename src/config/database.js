@@ -8,7 +8,7 @@ const { Pool } = pg
 // Database configuration
 const dbConfig = {
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: false, // process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   max: 20, // maximum number of connections in the pool
   connectionTimeoutMillis: 2000, // return error after 2 seconds if connection could not be established
   idleTimeoutMillis: 30000, // close connection after 30 seconds of inactivity
@@ -33,11 +33,11 @@ export const query = async (text, params) => {
   try {
     const res = await pool.query(text, params)
     const duration = Date.now() - start
-    
+
     if (process.env.NODE_ENV === 'development') {
       console.log(`🔍 Query executed: ${text.substring(0, 100)}... (${duration}ms)`)
     }
-    
+
     return res
   } catch (error) {
     console.error('❌ Database query error:', {
@@ -52,7 +52,7 @@ export const query = async (text, params) => {
 // Transaction helper
 export const transaction = async (callback) => {
   const client = await pool.connect()
-  
+
   try {
     await client.query('BEGIN')
     const result = await callback(client)
